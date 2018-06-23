@@ -10,6 +10,7 @@
 #define FIREBASE_AUTH "zC4cl98ldKnMieP0MX3M6Mao9Eqc4oixk8Hh2xW1"
 #define WIFI_SSID "Sengsly"
 #define WIFI_PASSWORD "thaikims3ng"
+#define REGION "DP/"
 
 char  serialData[MAX_TX_SIZE];
 SoftwareSerial softSerial(5, 4); // RX, TX
@@ -70,7 +71,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-  Firebase.stream("DP/");  
+  Firebase.stream(REGION);  
 
   //======================================================
 }
@@ -145,7 +146,7 @@ bool sendToServer(data_struct *data){
   realtime["Time"]= data->timestamp;
 
   Firebase.set(path, realtime);
-  Firebase.stream("DP/");  
+  Firebase.stream(REGION);  
 
   return true;
 }
@@ -196,27 +197,32 @@ void loop() {
       Serial.println(eventData);
       Serial.print("path: ");
       Serial.println(eventPath);
-      int charIndex=eventPath.lastIndexOf("/");
-      if( charIndex>=1){
-
+//      if( charIndex>=1){
+      if( eventPath.endsWith("Request")){
+        int charIndex=eventPath.lastIndexOf("/");
         eventPath=eventPath.substring(0,charIndex);
         Serial.print("String found =");
         Serial.println(eventPath );
 
-        String NE_Request= Firebase.getString("DP/"+eventPath+"/Request");
-        if (Firebase.succeeded()){
+        int NE_Request= Firebase.getInt(REGION+eventPath+"/Request");
+        if (Firebase.success()){
           raw_struct raw;
-          int NE_Radio=Firebase.getInt("DP/"+eventPath+"/Radio_AD");
-          int NE_Channel=Firebase.getInt("DP/"+eventPath+"/Radio_CH");
+          int NE_Radio=Firebase.getInt(REGION+eventPath+"/Radio_AD");
+          int NE_Channel=Firebase.getInt(REGION+eventPath+"/Radio_CH");
+          long Value1=Firebase.getInt(REGION+eventPath+"/Value1");
+          long Value2=Firebase.getInt(REGION+eventPath+"/Value2");
+          //long Value3=Firebase.getInt(REGION+eventPath+"/Value3");
+          //long Value4=Firebase.getInt(REGION+eventPath+"/Value4");
 
           switch (NE_Request){
             case command_enum::setTime:
-                raw.long1=NE_Data;
-                sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              raw.long1=Value1;
+              sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
               break;
             case command_enum::setPara:
-                raw.long1=NE_Data;
-                sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              raw.long1=Value1;
+              raw.long2=Value2;
+              sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
               break;
           }
           Serial.print("Radio :"); Serial.println(NE_Radio);
