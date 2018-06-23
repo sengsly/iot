@@ -197,31 +197,26 @@ void loop() {
       Serial.println(eventData);
       Serial.print("path: ");
       Serial.println(eventPath);
-//      if( charIndex>=1){
-      if( eventPath.endsWith("Request")){
+      if( eventPath.endsWith("/Request")){
+        Serial.println(eventPath );
         int charIndex=eventPath.lastIndexOf("/");
         eventPath=eventPath.substring(0,charIndex);
         Serial.print("String found =");
-        Serial.println(eventPath );
 
         int NE_Request= Firebase.getInt(REGION+eventPath+"/Request");
         if (Firebase.success()){
           raw_struct raw;
           int NE_Radio=Firebase.getInt(REGION+eventPath+"/Radio_AD");
           int NE_Channel=Firebase.getInt(REGION+eventPath+"/Radio_CH");
-          long Value1=Firebase.getInt(REGION+eventPath+"/Value1");
-          long Value2=Firebase.getInt(REGION+eventPath+"/Value2");
-          //long Value3=Firebase.getInt(REGION+eventPath+"/Value3");
-          //long Value4=Firebase.getInt(REGION+eventPath+"/Value4");
 
           switch (NE_Request){
             case command_enum::setTime:
-              raw.long1=Value1;
+              raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");
               sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
               break;
             case command_enum::setPara:
-              raw.long1=Value1;
-              raw.long2=Value2;
+              raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");    //On Time
+              raw.long2=Firebase.getInt(REGION+eventPath+"/Value2");    //Off Time
               sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
               break;
           }
