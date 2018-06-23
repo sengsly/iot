@@ -158,10 +158,6 @@ bool sendToElement(command_enum msg, int Address, int Channel,raw_struct raw ){
   //0A Modules channel  
   //Remaining Data
 
-  //#define SET_RADIO_CH    0x17
-  //#define SET_RADIO_AD    0x18
-  //#define SET_RADIO_GW    0x19
-
   buf[0]=(Address & 0xff00) >> 8;
   buf[1]=(Address & 0xff);
   buf[2]=Channel;
@@ -206,18 +202,27 @@ void loop() {
         eventPath=eventPath.substring(0,charIndex);
         Serial.print("String found =");
         Serial.println(eventPath );
-        raw_struct raw;
-        raw.long1=200;
-        raw.long2=200;
-        raw.long2=200;
-        raw.word1=200;
-        raw.word2=200;
-        raw.word3=200;
-        int NE_Radio=Firebase.getInt("DP/"+eventPath+"/Radio_AD");
-        int NE_Channel=Firebase.getInt("DP/"+eventPath+"/Radio_CH");
-        sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
-        Serial.print("Radio :"); Serial.println(NE_Radio);
-        Serial.print("Channel :"); Serial.println(NE_Channel);        
+
+        String NE_Request= Firebase.getString("DP/"+eventPath+"/Request");
+        if (Firebase.succeeded()){
+          raw_struct raw;
+          int NE_Radio=Firebase.getInt("DP/"+eventPath+"/Radio_AD");
+          int NE_Channel=Firebase.getInt("DP/"+eventPath+"/Radio_CH");
+
+          switch (NE_Request){
+            case command_enum::setTime:
+                raw.long1=NE_Data;
+                sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              break;
+            case command_enum::setPara:
+                raw.long1=NE_Data;
+                sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              break;
+          }
+          Serial.print("Radio :"); Serial.println(NE_Radio);
+          Serial.print("Channel :"); Serial.println(NE_Channel);        
+
+        }
       }
     }
   }   
