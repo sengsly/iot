@@ -170,7 +170,7 @@ bool sendToElement(command_enum msg, int Address, int Channel,raw_struct raw ){
   data.register_id=0x10;
   data.commandType=msg;
     
-  memcpy ( &data.data[0], &raw ,sizeof(data_struct));
+  memcpy ( &data.data[0], &raw ,sizeof(raw));
   memcpy(&buf[3], &data ,sizeof(data_struct));
   softSerial.write((uint8_t *)&data,8);
   softSerial.write(buf,MAX_TX_SIZE);
