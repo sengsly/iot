@@ -166,10 +166,10 @@ bool sendToElement(command_enum msg, int Address, int Channel,raw_struct raw ){
   buf[1]=(Address & 0xff);
   buf[2]=Channel;
   data.id=0;
-  data.crc=CRC16;
+  data.crc=CRC16; 
   data.register_id=0x10;
   data.commandType=msg;
-  
+    
   memcpy ( &data.data[0], &raw ,sizeof(data_struct));
   memcpy(&buf[3], &data ,sizeof(data_struct));
   softSerial.write((uint8_t *)&data,8);
