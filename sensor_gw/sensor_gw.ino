@@ -95,24 +95,13 @@ bool processMessage(data_struct data){
 
       break;
     case command_enum::setPara:
-      //Set parameter for the configuration
-      //memcpy(&para,  (void*)data->data[0],sizeof(raw_struct));
-      //memcpy//
-      //memcpy(&para,&para,sizeof(raw_struct));
-      //sendToGateway (command_enum::responseSetPara, &localData);
       break;  
     case command_enum::getPara:
-//      para.long1=param.timer_off_time;      
-//      para.long2=param.timer_on_time;      
-//      memcpy(&localData.data[0], &para ,sizeof(raw_struct));
-//      sendToGateway (command_enum::responseGetPara, &localData);
       
       break;
     case command_enum::getTime:
-      //para.long1=rtc.getUnix;     
-//      para.long1=(long)now.unixtime();      
-//      memcpy(&localData.data[0], &para ,sizeof(raw_struct));
-//      sendToGateway (command_enum::responseGetTime, &localData);
+    case command_enum::responseSetTime:
+      Serial.print("Set time success");
       break;
     case command_enum::setTime:
 //      memcpy(&para,localData.data[0],sizeof(raw_struct));
@@ -213,11 +202,17 @@ void loop() {
             case command_enum::setTime:
               raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");
               sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              Serial.print("Set time =");
+              Serial.println(raw.long1);
               break;
             case command_enum::setPara:
               raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");    //On Time
               raw.long2=Firebase.getInt(REGION+eventPath+"/Value2");    //Off Time
               sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              Serial.print("Set Para, Start Time= ");
+              Serial.print(raw.long1);
+              Serial.print(", Stop Time=");
+              Serial.println(raw.long1);
               break;
           }
           Serial.print("Radio :"); Serial.println(NE_Radio);

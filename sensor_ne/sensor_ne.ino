@@ -201,16 +201,14 @@ bool processMessage(data_struct *data){
       break;
     case command_enum::setTime:
       memcpy(&para,localData.data[0],sizeof(raw_struct));
-      setUnixTime (para.long1);
+      DateTime  newTime = DateTime(para.long1);
+      rtc.adjust(newTime);
       para.long1=1;     //success
       memcpy(&localData.data[0], &para ,sizeof(raw_struct));
       sendToGateway (command_enum::responseSetTime, &localData);
       // (void*)data
       break;
   }
-}
-void setUnixTime(long){
-
 }
 void loop() {
   DateTime now = rtc.now();

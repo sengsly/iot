@@ -105,11 +105,6 @@ struct request_struct{
     word register_id;
     word data;
 };
-struct lora_struct{
-    word radio_address;
-    byte radio_channel;
-    data_struct data;   
-}
 struct data_struct{
     word id;
     word crc;
@@ -119,3 +114,8 @@ struct data_struct{
     byte data[18];
 };
 
+struct lora_struct{
+    word radio_address;
+    byte radio_channel;
+    data_struct data;   
+};
