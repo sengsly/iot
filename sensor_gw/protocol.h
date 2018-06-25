@@ -18,7 +18,7 @@
 #define TIME_OUT         5000           //time out in ms
 #define NE_ID         1001            //NE  id
 #define RADIO_CH         0x0A             //Frequency channel
-#define RADIO_AD      0x0011             //NE address
+#define RADIO_AD        0x0011             //NE address
 #define RADIO_GW_AD       0x1              //address
 
 enum command_enum 
@@ -83,9 +83,9 @@ struct realtime_struct{
 };
 */
 struct raw_struct{
-    long long1;
-    long long2;
-    long long3;
+    unsigned long long1;
+    unsigned long long2;
+    unsigned long long3;
     word word1;
     word word2;
     word word3;

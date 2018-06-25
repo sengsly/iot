@@ -100,6 +100,7 @@ bool processMessage(data_struct data){
       
       break;
     case command_enum::getTime:
+      break;
     case command_enum::responseSetTime:
       Serial.print("Set time success");
       break;
@@ -112,9 +113,6 @@ bool processMessage(data_struct data){
       // (void*)data
       break;
   }
-}
-void setUnixTime(long){
-
 }
 void SynchronizeTimer(){
   
@@ -156,15 +154,20 @@ bool sendToElement(command_enum msg, int Address, int Channel,raw_struct raw ){
   data.register_id=0x10;
   data.commandType=msg;
     
+//  memcpy(&buf[3], (void*)data ,sizeof(data_struct));
+//  softSerial.write(buf,MAX_TX_SIZE);
+//  Serial.write(buf,MAX_TX_SIZE);
+
+
   memcpy ( &data.data[0], &raw ,sizeof(raw));
   memcpy(&buf[3], &data ,sizeof(data_struct));
-  softSerial.write((uint8_t *)&data,8);
   softSerial.write(buf,MAX_TX_SIZE);
   Serial.write(buf,MAX_TX_SIZE);
   return true;
 }
 void loop() {
   if (Firebase.available()) {
+
     FirebaseObject event = Firebase.readEvent();
     eventType = event.getString("type");
     eventType.toLowerCase();
@@ -190,35 +193,36 @@ void loop() {
         Serial.println(eventPath );
         int charIndex=eventPath.lastIndexOf("/");
         eventPath=eventPath.substring(0,charIndex);
-        Serial.print("String found =");
 
         int NE_Request= Firebase.getInt(REGION+eventPath+"/Request");
         if (Firebase.success()){
           raw_struct raw;
-          int NE_Radio=Firebase.getInt(REGION+eventPath+"/Radio_AD");
-          int NE_Channel=Firebase.getInt(REGION+eventPath+"/Radio_CH");
+          int NE_AD=Firebase.getInt(REGION+eventPath+"/Radio_AD");
+          int NE_CH=Firebase.getInt(REGION+eventPath+"/Radio_CH");
 
           switch (NE_Request){
             case command_enum::setTime:
               raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");
-              sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              sendToElement(command_enum::setTime , NE_AD,NE_CH,raw);
               Serial.print("Set time =");
               Serial.println(raw.long1);
               break;
             case command_enum::setPara:
               raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");    //On Time
               raw.long2=Firebase.getInt(REGION+eventPath+"/Value2");    //Off Time
-              sendToElement(command_enum::setTime ,NE_Radio,NE_Channel,raw);
+              sendToElement(command_enum::setTime , NE_AD,NE_CH,raw);
               Serial.print("Set Para, Start Time= ");
               Serial.print(raw.long1);
               Serial.print(", Stop Time=");
               Serial.println(raw.long1);
               break;
           }
-          Serial.print("Radio :"); Serial.println(NE_Radio);
-          Serial.print("Channel :"); Serial.println(NE_Channel);        
+          Serial.print("Request  :"); Serial.println(NE_Request );
+          Serial.print("Radio Address :"); Serial.println(NE_AD);
+          Serial.print("Radio Channel :"); Serial.println(NE_CH);        
 
         }
+      Firebase.stream(REGION);  
       }
     }
   }   
@@ -233,7 +237,9 @@ void loop() {
     } while (softSerial.available() && cnt < MAX_TX_SIZE);
     Serial.println("");
     memcpy(&send_data,serialData,sizeof(send_data));
+    Serial.println("Data received");
     if(send_data.crc==CRC16){//Check whether the CRC check iscorrect
+      Serial.println("CRC check ok");
       processMessage(send_data);
     };
     

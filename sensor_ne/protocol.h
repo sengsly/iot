@@ -83,9 +83,9 @@ struct realtime_struct{
 };
 */
 struct raw_struct{
-    long long1;
-    long long2;
-    long long3;
+    unsigned long long1;
+    unsigned long long2;
+    unsigned long long3;
     word word1;
     word word2;
     word word3;

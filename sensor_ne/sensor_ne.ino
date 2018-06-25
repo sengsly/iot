@@ -17,7 +17,7 @@
 char  serialData[MAX_TX_SIZE];
 DS1307 rtc;
 
-SoftwareSerial softSerial(10, 11); // RX, TX
+SoftwareSerial softSerial(3, 4); // RX, TX
 
 
 //AES Encryption================================================
@@ -87,8 +87,6 @@ void setup() {
 
 
   
-  //DateTime now = rtc.now();
-  //now.unixtime();
 
   Serial.print("Time On : "); 
   Serial.println(param.timer_on_time);
@@ -96,7 +94,6 @@ void setup() {
   Serial.print("Time Off: "); 
   Serial.println(param.timer_off_time);
   //============Initialize realtime value
-  //readRealtimeValue();
   fillRealtimeData();
   sendToGateway (command_enum::realtimeData, &send_data);
 }
@@ -184,6 +181,8 @@ bool processMessage(data_struct *data){
       memcpy(&para,localData.data[0],sizeof(raw_struct));
       param.timer_off_time=para.long1;
       param.timer_on_time=para.long2;
+      para.long1=1;
+      memcpy(&localData.data[0], &para ,sizeof(raw_struct));
       sendToGateway (command_enum::responseSetPara, &localData);
       break;  
     case command_enum::getPara:
@@ -191,22 +190,21 @@ bool processMessage(data_struct *data){
       para.long2=param.timer_on_time;      
       memcpy(&localData.data[0], &para ,sizeof(raw_struct));
       sendToGateway (command_enum::responseGetPara, &localData);
-      
       break;
     case command_enum::getTime:
-      //para.long1=rtc.getUnix;     
       para.long1=(long)now.unixtime();      
       memcpy(&localData.data[0], &para ,sizeof(raw_struct));
       sendToGateway (command_enum::responseGetTime, &localData);
       break;
     case command_enum::setTime:
       memcpy(&para,localData.data[0],sizeof(raw_struct));
+      Serial.print("Setting time=");
+      Serial.println(para.long1);
       DateTime  newTime = DateTime(para.long1);
       rtc.adjust(newTime);
       para.long1=1;     //success
       memcpy(&localData.data[0], &para ,sizeof(raw_struct));
       sendToGateway (command_enum::responseSetTime, &localData);
-      // (void*)data
       break;
   }
 }
@@ -237,17 +235,19 @@ void loop() {
       digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));   // turn the LED on (HIGH is the voltage level)
     }
   }  
+
   if (softSerial.available() ) {
     int cnt = 0;
     do {
       serialData[cnt++] = softSerial.read();
       delay(1);
     } while (softSerial.available() && cnt < MAX_TX_SIZE);
+    
+    Serial.println("");
     memcpy(&send_data,serialData,sizeof(send_data));
     if(send_data.crc==CRC16){   //Check if valid CRC data
       processMessage( &send_data);
     }
-    Serial.print(send_data.data[0],DEC);
   }
 
 }
