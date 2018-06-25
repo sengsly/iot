@@ -137,9 +137,10 @@ bool sendToServer(data_struct *data){
 
   return true;
 }
-bool sendToElement(command_enum msg, int Address, int Channel,raw_struct raw ){
+bool sendToElement(command_enum msg, int Address, int Channel,unsigned long value1, unsigned long value2){
   byte buf[MAX_TX_SIZE+3];      //Address and channel
   data_struct data;
+  raw_struct raw;
   // Point to point E32 
   //0011 0A 1111 1112 1111 11109 0008 0144444546474849
   //00 11 Modules address
@@ -149,20 +150,16 @@ bool sendToElement(command_enum msg, int Address, int Channel,raw_struct raw ){
   buf[0]=(Address & 0xff00) >> 8;
   buf[1]=(Address & 0xff);
   buf[2]=Channel;
-  data.id=0;
+  data.id=10;
   data.crc=CRC16; 
   data.register_id=0x10;
   data.commandType=msg;
+  raw.long1=value1;
+  raw.long2=value2;
     
-//  memcpy(&buf[3], (void*)data ,sizeof(data_struct));
-//  softSerial.write(buf,MAX_TX_SIZE);
-//  Serial.write(buf,MAX_TX_SIZE);
-
-
-  memcpy ( &data.data[0], &raw ,sizeof(raw));
+  memcpy (&data.data[0], &raw ,sizeof(raw));
   memcpy(&buf[3], &data ,sizeof(data_struct));
   softSerial.write(buf,MAX_TX_SIZE);
-  Serial.write(buf,MAX_TX_SIZE);
   return true;
 }
 void loop() {
@@ -196,25 +193,27 @@ void loop() {
 
         int NE_Request= Firebase.getInt(REGION+eventPath+"/Request");
         if (Firebase.success()){
-          raw_struct raw;
+          unsigned long value1,value2;
           int NE_AD=Firebase.getInt(REGION+eventPath+"/Radio_AD");
           int NE_CH=Firebase.getInt(REGION+eventPath+"/Radio_CH");
 
           switch (NE_Request){
             case command_enum::setTime:
-              raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");
-              sendToElement(command_enum::setTime , NE_AD,NE_CH,raw);
+            Serial.print("Time requesed = ");
+              value1=(unsigned long)Firebase.getFloat(REGION+eventPath+"/Value1");
+            Serial.println(value1);
+              sendToElement(command_enum::setTime , NE_AD,NE_CH,value1,value2);
               Serial.print("Set time =");
-              Serial.println(raw.long1);
+              Serial.println(value1);
               break;
             case command_enum::setPara:
-              raw.long1=Firebase.getInt(REGION+eventPath+"/Value1");    //On Time
-              raw.long2=Firebase.getInt(REGION+eventPath+"/Value2");    //Off Time
-              sendToElement(command_enum::setTime , NE_AD,NE_CH,raw);
+              value1=(unsigned long) Firebase.getFloat(REGION+eventPath+"/Value1");    //On Time
+              value2=(unsigned long) Firebase.getFloat(REGION+eventPath+"/Value2");    //Off Time
+              sendToElement(command_enum::setTime , NE_AD,NE_CH,value1,value2);
               Serial.print("Set Para, Start Time= ");
-              Serial.print(raw.long1);
+              Serial.print(value1);
               Serial.print(", Stop Time=");
-              Serial.println(raw.long1);
+              Serial.println(value2);
               break;
           }
           Serial.print("Request  :"); Serial.println(NE_Request );

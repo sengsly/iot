@@ -192,12 +192,13 @@ bool processMessage(data_struct *data){
       sendToGateway (command_enum::responseGetPara, &localData);
       break;
     case command_enum::getTime:
-      para.long1=(long)now.unixtime();      
+      
+      para.long1=(unsigned long )now.unixtime();      
       memcpy(&localData.data[0], &para ,sizeof(raw_struct));
       sendToGateway (command_enum::responseGetTime, &localData);
       break;
     case command_enum::setTime:
-      memcpy(&para,localData.data[0],sizeof(raw_struct));
+      memcpy(&para,(void*)data.data[0],sizeof(raw_struct));
       Serial.print("Setting time=");
       Serial.println(para.long1);
       DateTime  newTime = DateTime(para.long1);

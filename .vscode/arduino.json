@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:nano",
     "sketch": "sensor_ne\\sensor_ne.ino",
-    "port": "COM9",
+    "port": "COM5",
     "configuration": "cpu=atmega328"
 }
