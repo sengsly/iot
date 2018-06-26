@@ -170,12 +170,12 @@ void fillRealtimeData(){
 }
 
 
-bool processMessage(data_struct *data){
+bool processMessage(data_struct data){
   raw_struct para;
   data_struct localData;
   DateTime now = rtc.now();
  
-  switch(data->commandType){
+  switch(data.commandType){
     case command_enum::setPara:
       //Set parameter for the configuration
       memcpy(&para,localData.data[0],sizeof(raw_struct));
@@ -198,7 +198,7 @@ bool processMessage(data_struct *data){
       sendToGateway (command_enum::responseGetTime, &localData);
       break;
     case command_enum::setTime:
-      memcpy(&para,(void*)data.data[0],sizeof(raw_struct));
+      memcpy(&para,&data.data[0],sizeof(raw_struct));
       Serial.print("Setting time=");
       Serial.println(para.long1);
       DateTime  newTime = DateTime(para.long1);
@@ -247,7 +247,7 @@ void loop() {
     Serial.println("");
     memcpy(&send_data,serialData,sizeof(send_data));
     if(send_data.crc==CRC16){   //Check if valid CRC data
-      processMessage( &send_data);
+      processMessage( send_data);
     }
   }
 
